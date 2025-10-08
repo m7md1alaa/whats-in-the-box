@@ -25,8 +25,9 @@ struct whats_in_the_boxApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView()  // ThemeManager is already injected in ContentView
         }
         .modelContainer(sharedModelContainer)
+        // Remove .environment(Theme.standard) line
     }
 }
