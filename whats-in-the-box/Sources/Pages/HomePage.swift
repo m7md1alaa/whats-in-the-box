@@ -4,8 +4,12 @@ import SwiftData
 struct HomePage: View {
     @Environment(Router.self) private var router
     @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.modelContext) private var context
     
     @Query(StorageBox.recentlyUpdated) private var boxes: [StorageBox]
+    
+    @State private var boxToDelete: StorageBox?
+    @State private var isShowingDeleteAlert = false
     
     var body: some View {
         ScrollView {
@@ -58,6 +62,14 @@ struct HomePage: View {
             }
             #endif
         }
+        .alert("Are you sure?", isPresented: $isShowingDeleteAlert) {
+            Button("Delete", role: .destructive) {
+                deleteBox()
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("This action cannot be undone.")
+        }
     }
     
     // MARK: - Header Section
@@ -101,10 +113,15 @@ struct HomePage: View {
             GridItem(.flexible())
         ], spacing: 16) {
             ForEach(boxes) { box in
-                BoxCard(box: box)
-                    .onTapGesture {
-                        router.navigate(to: .boxDetail(boxId: box.id.uuidString))
-                    }
+                BoxCard(box: box) {
+                    router.navigate(to: .editBox(boxId: box.id.uuidString))
+                } onDelete: {
+                    boxToDelete = box
+                    isShowingDeleteAlert = true
+                }
+                .onTapGesture {
+                    router.navigate(to: .boxDetail(boxId: box.id.uuidString))
+                }
             }
         }
     }
@@ -112,11 +129,20 @@ struct HomePage: View {
     private var totalItems: Int {
         boxes.reduce(0) { $0 + $1.itemCount }
     }
+    
+    private func deleteBox() {
+        if let box = boxToDelete {
+            context.delete(box)
+            boxToDelete = nil
+        }
+    }
 }
 
 // MARK: - Box Card Component
 struct BoxCard: View {
     let box: StorageBox
+    let onEdit: () -> Void
+    let onDelete: () -> Void
     @EnvironmentObject private var themeManager: ThemeManager
     
     var body: some View {
@@ -157,6 +183,17 @@ struct BoxCard: View {
         .padding()
         .background(themeManager.selectedTheme.textBoxColor)
         .cornerRadius(16)
+        #if os(macOS)
+        .contextMenu {
+            Button(action: onEdit) {
+                Label("Edit Box", systemImage: "pencil")
+            }
+            
+            Button(role: .destructive, action: onDelete) {
+                Label("Delete Box", systemImage: "trash")
+            }
+        }
+        #endif
     }
 }
 

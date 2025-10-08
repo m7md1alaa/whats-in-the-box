@@ -9,6 +9,7 @@ struct BoxDetailPage: View {
     @Environment(\.modelContext) private var context
     
     @Query private var boxes: [StorageBox]
+    @State private var isShowingDeleteAlert = false
     
     init(boxId: String) {
         self.boxId = boxId
@@ -53,7 +54,7 @@ struct BoxDetailPage: View {
                     }
                     
                     Button(role: .destructive) {
-                        deleteBox()
+                        isShowingDeleteAlert = true
                     } label: {
                         Label("Delete Box", systemImage: "trash")
                     }
@@ -70,7 +71,7 @@ struct BoxDetailPage: View {
                         }
                         
                         Button(role: .destructive) {
-                            deleteBox()
+                            isShowingDeleteAlert = true
                         } label: {
                             Label("Delete Box", systemImage: "trash")
                         }
@@ -80,6 +81,14 @@ struct BoxDetailPage: View {
                     }
                 }
                 #endif
+            }
+            .alert("Are you sure?", isPresented: $isShowingDeleteAlert) {
+                Button("Delete", role: .destructive) {
+                    deleteBox()
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("This action cannot be undone.")
             }
         } else {
             ContentUnavailableView("Box Not Found", systemImage: "shippingbox.fill")
