@@ -1,19 +1,41 @@
 import SwiftUI
+import SwiftData
 
 struct SettingsPage: View {
-    @Environment(Router.self) private var router
     @EnvironmentObject private var themeManager: ThemeManager
     @Environment(\.colorScheme) private var colorScheme
+    
+    @Query(StorageBox.all) private var boxes: [StorageBox]
+    
+    private var photoCount: Int {
+        boxes.filter { $0.photoURL != nil }.count
+    }
+
+    private var storageUsed: String {
+        let photoURLs = boxes.compactMap { $0.photoURL }
+        var totalSize: Int64 = 0
+        for urlString in photoURLs {
+            let fileURL = URL(fileURLWithPath: urlString)
+            if let attributes = try? FileManager.default.attributesOfItem(atPath: fileURL.path) {
+                totalSize += attributes[.size] as? Int64 ?? 0
+            }
+        }
+        return ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file)
+    }
     
     var body: some View {
         List {
             // App Section
             Section {
-                SettingRow(
-                    icon: "paintbrush.fill",
-                    title: "Appearance",
-                    value: colorScheme == .dark ? "Dark" : "Light"
-                )
+                Button {
+                    SystemSettingsOpener.openAppSettings()
+                } label: {
+                    SettingRow(
+                        icon: "paintbrush.fill",
+                        title: "Appearance",
+                        value: colorScheme == .dark ? "Dark" : "Light"
+                    )
+                }
                 
                 SettingRow(
                     icon: "bell.fill",
@@ -30,13 +52,13 @@ struct SettingsPage: View {
                 SettingRow(
                     icon: "externaldrive.fill",
                     title: "Storage Used",
-                    value: "12.5 MB"
+                    value: storageUsed
                 )
                 
                 SettingRow(
                     icon: "photo.fill",
                     title: "Photos",
-                    value: "45 items"
+                    value: "\(photoCount) items"
                 )
                 
                 Button {
