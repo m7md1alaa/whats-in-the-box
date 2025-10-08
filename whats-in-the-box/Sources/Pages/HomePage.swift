@@ -26,8 +26,23 @@ struct HomePage: View {
             .padding()
         }
         .navigationTitle("My Boxes")
+        #if os(iOS)
         .navigationBarTitleDisplayMode(.large)
+        #endif
         .toolbar {
+            #if os(macOS)
+            Button {
+                router.navigate(to: .settings)
+            } label: {
+                Image(systemName: "gear")
+            }
+            
+            Button {
+                router.navigate(to: .addBox)
+            } label: {
+                Image(systemName: "plus.circle.fill")
+            }
+            #else
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     router.navigate(to: .settings)
@@ -45,6 +60,7 @@ struct HomePage: View {
                         .foregroundColor(themeManager.selectedTheme.primaryThemeColor)
                 }
             }
+            #endif
         }
     }
     

@@ -118,7 +118,9 @@ struct SettingsPage: View {
             }
         }
         .navigationTitle("Settings")
+        #if os(iOS)
         .navigationBarTitleDisplayMode(.large)
+        #endif
     }
 }
 

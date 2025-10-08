@@ -25,6 +25,20 @@ struct whats_in_the_boxApp: App {
 
     var body: some Scene {
         WindowGroup {
+            #if os(macOS)
+            NavigationSplitView {
+                SidebarView()
+            } detail: {
+                NavigationStack(path: $router.path) {
+                    HomePage()
+                        .navigationDestination(for: Route.self) { route in
+                            routeView(for: route)
+                        }
+                }
+            }
+            .environment(router)
+            .environmentObject(themeManager)
+            #else
             NavigationStack(path: $router.path) {
                 HomePage()
                     .navigationDestination(for: Route.self) { route in
@@ -33,7 +47,34 @@ struct whats_in_the_boxApp: App {
             }
             .environment(router)
             .environmentObject(themeManager)
+            #endif
         }
         .modelContainer(sharedModelContainer)
     }
 }
+
+#if os(macOS)
+struct SidebarView: View {
+    @Environment(Router.self) private var router
+    
+    var body: some View {
+        List {
+            Button {
+                router.navigateToRoot()
+            } label: {
+                Label("Home", systemImage: "house")
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                router.navigate(to: .settings)
+            } label: {
+                Label("Settings", systemImage: "gear")
+            }
+            .buttonStyle(.plain)
+        }
+        .listStyle(.sidebar)
+        .navigationTitle("What's in the box?")
+    }
+}
+#endif

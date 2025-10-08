@@ -33,8 +33,27 @@ struct BoxDetailPage: View {
             .padding()
         }
         .navigationTitle(box.name)
+        #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+        #endif
         .toolbar {
+            #if os(macOS)
+            Menu {
+                Button {
+                    router.navigate(to: .editBox(boxId: boxId))
+                } label: {
+                    Label("Edit Box", systemImage: "pencil")
+                }
+                
+                Button(role: .destructive) {
+                    deleteBox()
+                } label: {
+                    Label("Delete Box", systemImage: "trash")
+                }
+            } label: {
+                Label("Actions", systemImage: "ellipsis.circle")
+            }
+            #else
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button {
@@ -53,6 +72,7 @@ struct BoxDetailPage: View {
                         .foregroundColor(themeManager.selectedTheme.primaryThemeColor)
                 }
             }
+            #endif
         }
     }
     

@@ -86,6 +86,10 @@ struct AddBoxPage: View {
                     .autocorrectionDisabled()
             } header: {
                 Text("Details")
+                    .font(themeManager.selectedTheme.captionTxtFont)
+            } footer: {
+                Text("Give your box a unique name and optionally specify where it's located")
+                    .font(themeManager.selectedTheme.bodyTextFont)
             }
             
             Section {
@@ -112,9 +116,11 @@ struct AddBoxPage: View {
             }
         }
         .navigationTitle("New Box")
+        #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+        #endif
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
+            ToolbarItem(placement: .cancellationAction) {
                 Button("Cancel") {
                     router.navigateBack()
                 }

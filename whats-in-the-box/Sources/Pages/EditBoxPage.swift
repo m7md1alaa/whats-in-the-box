@@ -38,7 +38,9 @@ struct EditBoxPage: View {
             }
         }
         .navigationTitle("Edit Box")
+        #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
+        #endif
     }
     
     private func saveChanges() {
