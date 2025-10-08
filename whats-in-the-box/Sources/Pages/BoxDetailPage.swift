@@ -1,60 +1,50 @@
 import SwiftUI
+import SwiftData
+
 
 struct BoxDetailPage: View {
     let boxId: String
-    
     @Environment(Router.self) private var router
     @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(\.modelContext) private var context
     
-    // Mock data
-    @State private var box = BoxDetail(
-        id: "1",
-        name: "Kitchen Drawer",
-        location: "Under sink",
-        items: [
-            "USB-C Cable", "Old Phone Charger", "Earbuds",
-            "AA Batteries", "Screwdriver Set", "Tape Measure",
-            "Flashlight", "Paper Clips"
-        ]
-    )
+    @Query private var boxes: [StorageBox]
+    
+    init(boxId: String) {
+        self.boxId = boxId
+        if let id = UUID(uuidString: boxId) {
+            let predicate = #Predicate<StorageBox> {
+                $0.id == id
+            }
+            _boxes = Query(filter: predicate)
+        }
+    }
+    
+    private var box: StorageBox? {
+        boxes.first
+    }
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                // Box Image
-                boxImage
-                
-                // Box Info
-                boxInfo
-                
-                // Items List
-                itemsList
-            }
-            .padding()
-        }
-        .navigationTitle(box.name)
-        #if os(iOS)
-        .navigationBarTitleDisplayMode(.inline)
-        #endif
-        .toolbar {
-            #if os(macOS)
-            Menu {
-                Button {
-                    router.navigate(to: .editBox(boxId: boxId))
-                } label: {
-                    Label("Edit Box", systemImage: "pencil")
+        if let box = box {
+            ScrollView {
+                VStack(spacing: 24) {
+                    // Box Image
+                    boxImage(for: box)
+                    
+                    // Box Info
+                    boxInfo(for: box)
+                    
+                    // Items List
+                    itemsList(for: box)
                 }
-                
-                Button(role: .destructive) {
-                    deleteBox()
-                } label: {
-                    Label("Delete Box", systemImage: "trash")
-                }
-            } label: {
-                Label("Actions", systemImage: "ellipsis.circle")
+                .padding()
             }
-            #else
-            ToolbarItem(placement: .topBarTrailing) {
+            .navigationTitle(box.name)
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                #if os(macOS)
                 Menu {
                     Button {
                         router.navigate(to: .editBox(boxId: boxId))
@@ -68,51 +58,81 @@ struct BoxDetailPage: View {
                         Label("Delete Box", systemImage: "trash")
                     }
                 } label: {
-                    Image(systemName: "ellipsis.circle")
-                        .foregroundColor(themeManager.selectedTheme.primaryThemeColor)
+                    Label("Actions", systemImage: "ellipsis.circle")
                 }
+                #else
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Button {
+                            router.navigate(to: .editBox(boxId: boxId))
+                        } label: {
+                            Label("Edit Box", systemImage: "pencil")
+                        }
+                        
+                        Button(role: .destructive) {
+                            deleteBox()
+                        } label: {
+                            Label("Delete Box", systemImage: "trash")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                            .foregroundColor(themeManager.selectedTheme.primaryThemeColor)
+                    }
+                }
+                #endif
             }
-            #endif
+        } else {
+            ContentUnavailableView("Box Not Found", systemImage: "shippingbox.fill")
         }
     }
     
     // MARK: - Box Image
-    private var boxImage: some View {
-        RoundedRectangle(cornerRadius: 16)
-            .fill(themeManager.selectedTheme.primaryThemeColor.opacity(0.1))
-            .frame(height: 200)
-            .overlay {
-                VStack(spacing: 12) {
-                    Image(systemName: "shippingbox.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(themeManager.selectedTheme.primaryThemeColor)
-                    
-                    Text("Tap to add photo")
-                        .font(themeManager.selectedTheme.bodyTextFont)
-                        .foregroundColor(themeManager.selectedTheme.bodyTextColor.opacity(0.6))
-                }
+    private func boxImage(for box: StorageBox) -> some View {
+        Group {
+            if let photoURL = box.photoURL, let image = loadImageFromPath(photoURL) {
+                Image(platformImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(height: 200)
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
+            } else {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(themeManager.selectedTheme.primaryThemeColor.opacity(0.1))
+                    .frame(height: 200)
+                    .overlay {
+                        VStack(spacing: 12) {
+                            Image(systemName: "shippingbox.fill")
+                                .font(.system(size: 60))
+                                .foregroundColor(themeManager.selectedTheme.primaryThemeColor)
+                            
+                            Text("No photo for this box")
+                                .font(themeManager.selectedTheme.bodyTextFont)
+                                .foregroundColor(themeManager.selectedTheme.bodyTextColor.opacity(0.6))
+                        }
+                    }
             }
+        }
     }
     
     // MARK: - Box Info
-    private var boxInfo: some View {
+    private func boxInfo(for box: StorageBox) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             InfoRow(
                 icon: "mappin.circle.fill",
                 title: "Location",
-                value: box.location
+                value: box.locationHint.isEmpty ? "Not specified" : box.locationHint
             )
             
             InfoRow(
                 icon: "list.bullet",
                 title: "Items",
-                value: "\(box.items.count) items"
+                value: "\(box.itemCount) items"
             )
             
             InfoRow(
                 icon: "calendar",
                 title: "Last Updated",
-                value: "Today"
+                value: box.updatedAt.formatted(date: .abbreviated, time: .shortened)
             )
         }
         .padding()
@@ -121,32 +141,56 @@ struct BoxDetailPage: View {
     }
     
     // MARK: - Items List
-    private var itemsList: some View {
+    private func itemsList(for box: StorageBox) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Contents")
                 .font(themeManager.selectedTheme.textTitleFont)
                 .foregroundColor(themeManager.selectedTheme.bodyTextColor)
             
-            ForEach(box.items, id: \.self) { item in
-                HStack {
-                    Circle()
-                        .fill(themeManager.selectedTheme.secondoryThemeColor)
-                        .frame(width: 8, height: 8)
-                    
-                    Text(item)
-                        .font(themeManager.selectedTheme.bodyTextFont)
-                        .foregroundColor(themeManager.selectedTheme.bodyTextColor)
-                    
-                    Spacer()
+            if let items = box.items, !items.isEmpty {
+                ForEach(items) { item in
+                    HStack {
+                        Circle()
+                            .fill(themeManager.selectedTheme.secondoryThemeColor)
+                            .frame(width: 8, height: 8)
+                        
+                        Text(item.name)
+                            .font(themeManager.selectedTheme.bodyTextFont)
+                            .foregroundColor(themeManager.selectedTheme.bodyTextColor)
+                        
+                        Spacer()
+                    }
+                    .padding(.vertical, 4)
                 }
-                .padding(.vertical, 4)
+            } else {
+                Text("No items in this box yet.")
+                    .font(themeManager.selectedTheme.bodyTextFont)
+                    .foregroundColor(themeManager.selectedTheme.bodyTextColor.opacity(0.6))
             }
         }
     }
     
     private func deleteBox() {
-        router.navigateBack()
-        // TODO: Implement actual deletion
+        if let box = box {
+            context.delete(box)
+            router.navigateBack()
+        }
+    }
+    
+    private func loadImageFromPath(_ path: String) -> PlatformImage? {
+        let fileURL: URL
+        if path.hasPrefix("file://") {
+            fileURL = URL(fileURLWithPath: path.replacingOccurrences(of: "file://", with: ""))
+        } else {
+            fileURL = URL(fileURLWithPath: path)
+        }
+        
+        guard let data = try? Data(contentsOf: fileURL),
+              let image = PlatformImage(data: data) else {
+            return nil
+        }
+        
+        return image
     }
 }
 
@@ -180,18 +224,4 @@ struct InfoRow: View {
     }
 }
 
-// MARK: - Mock Model
-struct BoxDetail {
-    let id: String
-    let name: String
-    let location: String
-    let items: [String]
-}
 
-#Preview {
-    NavigationStack {
-        BoxDetailPage(boxId: "1")
-            .environment(Router())
-            .environmentObject(ThemeManager())
-    }
-}

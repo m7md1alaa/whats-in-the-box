@@ -1,15 +1,11 @@
 import SwiftUI
+import SwiftData
 
 struct HomePage: View {
     @Environment(Router.self) private var router
     @EnvironmentObject private var themeManager: ThemeManager
     
-    // Mock data for demonstration
-    @State private var boxes = [
-        Box(id: "1", name: "Kitchen Drawer", itemCount: 12),
-        Box(id: "2", name: "Tech Cables", itemCount: 8),
-        Box(id: "3", name: "Old Headphones", itemCount: 5)
-    ]
+    @Query(StorageBox.recentlyUpdated) private var boxes: [StorageBox]
     
     var body: some View {
         ScrollView {
@@ -107,7 +103,7 @@ struct HomePage: View {
             ForEach(boxes) { box in
                 BoxCard(box: box)
                     .onTapGesture {
-                        router.navigate(to: .boxDetail(boxId: box.id))
+                        router.navigate(to: .boxDetail(boxId: box.id.uuidString))
                     }
             }
         }
@@ -120,7 +116,7 @@ struct HomePage: View {
 
 // MARK: - Box Card Component
 struct BoxCard: View {
-    let box: Box
+    let box: StorageBox
     @EnvironmentObject private var themeManager: ThemeManager
     
     var body: some View {
@@ -153,12 +149,7 @@ struct BoxCard: View {
     }
 }
 
-// MARK: - Mock Model
-struct Box: Identifiable {
-    let id: String
-    let name: String
-    let itemCount: Int
-}
+
 
 #Preview {
     NavigationStack {

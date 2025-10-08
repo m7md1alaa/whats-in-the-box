@@ -10,6 +10,8 @@ struct whats_in_the_boxApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,
+            StorageBox.self,
+            BoxItem.self
         ])
         let modelConfiguration = ModelConfiguration(
             schema: schema,
