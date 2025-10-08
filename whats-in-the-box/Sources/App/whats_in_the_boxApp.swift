@@ -1,20 +1,20 @@
-//
-//  whats_in_the_boxApp.swift
-//  whats-in-the-box
-//
-//  Created by mohd on 07/10/2025.
-//
-
 import SwiftUI
 import SwiftData
 
 @main
 struct whats_in_the_boxApp: App {
+    // MARK: - Dependencies
+    @State private var router = Router()
+    @StateObject private var themeManager = ThemeManager()
+    
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        let modelConfiguration = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: false
+        )
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
@@ -25,9 +25,15 @@ struct whats_in_the_boxApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()  // ThemeManager is already injected in ContentView
+            NavigationStack(path: $router.path) {
+                HomePage()
+                    .navigationDestination(for: Route.self) { route in
+                        routeView(for: route)
+                    }
+            }
+            .environment(router)
+            .environmentObject(themeManager)
         }
         .modelContainer(sharedModelContainer)
-        // Remove .environment(Theme.standard) line
     }
 }
