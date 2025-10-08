@@ -216,6 +216,13 @@ struct BoxEditorPage: View {
                         .buttonStyle(.plain)
                         .padding(12)
                     }
+                    .contextMenu {
+                        Button(action: {
+                            self.photoURL = nil
+                        }) {
+                            Label("Remove Photo", systemImage: "trash")
+                        }
+                    }
             }
         } else {
             VStack(spacing: 16) {

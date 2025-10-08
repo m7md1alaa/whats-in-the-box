@@ -52,6 +52,31 @@ struct whats_in_the_boxApp: App {
             #endif
         }
         .modelContainer(sharedModelContainer)
+        .commands {
+            #if os(macOS)
+            CommandGroup(replacing: .newItem) {
+                Button("New Box") {
+                    router.navigate(to: .addBox)
+                }
+                .keyboardShortcut("n", modifiers: .command)
+                
+                Divider()
+            }
+            // Remove View menu
+              CommandGroup(replacing: .sidebar) { }
+            CommandGroup(after: .appSettings) {
+                Button("Settings"){
+                    router.navigate(to: .settings)
+                }
+                // i awnt to remove the new windown cuz it is also n .keyboardShortcut(",", modifiers: .command)
+                .keyboardShortcut(",", modifiers: .command)
+                
+            }
+              
+              // Remove Window menu
+              CommandGroup(replacing: .windowList) { }
+            #endif
+        }
     }
 }
 
@@ -65,13 +90,6 @@ struct SidebarView: View {
                 router.navigateToRoot()
             } label: {
                 Label("Home", systemImage: "house")
-            }
-            .buttonStyle(.plain)
-
-            Button {
-                router.navigate(to: .settings)
-            } label: {
-                Label("Settings", systemImage: "gear")
             }
             .buttonStyle(.plain)
         }
