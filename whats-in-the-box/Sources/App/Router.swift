@@ -48,9 +48,9 @@ func routeView(for route: Route) -> some View {
         SettingsPage()
         
     case .addBox:
-        AddBoxPage()
+        BoxEditorPage(boxId: nil)
         
     case .editBox(let boxId):
-        EditBoxPage(boxId: boxId)
+        BoxEditorPage(boxId: boxId)
     }
 }

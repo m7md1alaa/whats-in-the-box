@@ -50,6 +50,7 @@ class BoxItem {
 class StorageBox {
     @Attribute(.unique) var id: UUID
     var name: String
+    private var nameLowercased: String
     var photoURL: String?
     var locationHint: String
     var createdAt: Date
@@ -75,6 +76,7 @@ class StorageBox {
     init(name: String, photoURL: String? = nil, locationHint: String = "") {
         self.id = UUID()
         self.name = name
+        self.nameLowercased = name.lowercased()
         self.photoURL = photoURL
         self.locationHint = locationHint
         self.createdAt = Date()
@@ -101,9 +103,20 @@ class StorageBox {
     }
     
     /// Update box properties
-    func update(name: String? = nil, locationHint: String? = nil, photoURL: String? = nil) {
+    func update(context: ModelContext, name: String? = nil, locationHint: String? = nil, photoURL: String? = nil) throws {
         if let name = name {
+            // Validate name
+            guard !name.trimmingCharacters(in: .whitespaces).isEmpty else {
+                throw StorageBoxError.invalidName
+            }
+            
+            // Check for duplicates
+            if try exists(context: context, name: name) {
+                throw StorageBoxError.duplicateName
+            }
+            
             self.name = name
+            self.nameLowercased = name.lowercased()
         }
         if let locationHint = locationHint {
             self.locationHint = locationHint
@@ -134,11 +147,11 @@ class StorageBox {
     
     /// Check if box with given name already exists
     private func exists(context: ModelContext, name: String) throws -> Bool {
-        let trimmedName = name.trimmingCharacters(in: .whitespaces)
-        let currentId = self.id  // Capture self.id before predicate
+        let lowercasedName = name.trimmingCharacters(in: .whitespaces).lowercased()
+        let currentId = self.id
         
         let predicate = #Predicate<StorageBox> { box in
-            box.name.localizedStandardContains(trimmedName) && box.id != currentId
+            box.nameLowercased == lowercasedName && box.id != currentId
         }
         
         let fetchDescriptor = FetchDescriptor<StorageBox>(predicate: predicate)

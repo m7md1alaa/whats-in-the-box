@@ -2,23 +2,39 @@ import SwiftUI
 import SwiftData
 import PhotosUI
 
-struct AddBoxPage: View {
+struct BoxEditorPage: View {
     @Environment(Router.self) private var router
     @Environment(\.modelContext) private var context
     @EnvironmentObject private var themeManager: ThemeManager
-    
-    @State private var boxName = ""
-    @State private var locationHint = ""
+
+    let boxId: String?
+    @Query private var boxes: [StorageBox]
+    private var box: StorageBox? { boxes.first }
+
+    @State private var boxName: String = ""
+    @State private var location: String = ""
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var photoURL: String?
     @State private var showError = false
     @State private var errorMessage = ""
     @State private var isSaving = false
-    
+
+    private var isEditing: Bool { box != nil }
+    private var navigationTitle: String { isEditing ? "Edit Box" : "Add New Box" }
+    private var saveButtonTitle: String { isEditing ? "Save Changes" : "Save Box" }
+
+    init(boxId: String?) {
+        self.boxId = boxId
+        var predicate: Predicate<StorageBox> = #Predicate { _ in false }
+        if let idString = boxId, let id = UUID(uuidString: idString) {
+            predicate = #Predicate<StorageBox> { $0.id == id }
+        }
+        _boxes = Query(filter: predicate)
+    }
+
     var body: some View {
         Form {
             Section {
-                // Photo Picker
                 PhotosPicker(
                     selection: $selectedPhoto,
                     matching: .images,
@@ -26,7 +42,6 @@ struct AddBoxPage: View {
                 ) {
                     VStack(spacing: 16) {
                         if let photoURL = photoURL {
-                            // Show selected photo
                             if let image = loadImageFromPath(photoURL) {
                                 Image(platformImage: image)
                                     .resizable()
@@ -34,7 +49,6 @@ struct AddBoxPage: View {
                                     .frame(height: 180)
                                     .clipShape(RoundedRectangle(cornerRadius: 12))
                             } else {
-                                // Fallback if image fails to load
                                 RoundedRectangle(cornerRadius: 12)
                                     .fill(themeManager.selectedTheme.primaryThemeColor.opacity(0.1))
                                     .frame(height: 180)
@@ -45,7 +59,6 @@ struct AddBoxPage: View {
                                     }
                             }
                         } else {
-                            // Photo placeholder
                             RoundedRectangle(cornerRadius: 12)
                                 .fill(themeManager.selectedTheme.primaryThemeColor.opacity(0.1))
                                 .frame(height: 180)
@@ -54,14 +67,12 @@ struct AddBoxPage: View {
                                         Image(systemName: "camera.fill")
                                             .font(.system(size: 40))
                                             .foregroundColor(themeManager.selectedTheme.primaryThemeColor)
-                                        
-                                        Text("Add Photo")
+                                        Text(isEditing ? "Change Photo" : "Add Photo")
                                             .font(themeManager.selectedTheme.normalBtnTitleFont)
                                             .foregroundColor(themeManager.selectedTheme.primaryThemeColor)
                                     }
                                 }
                         }
-                        
                         Text(photoURL != nil ? "Tap to change photo" : "AI will identify items automatically")
                             .font(themeManager.selectedTheme.bodyTextFont)
                             .foregroundColor(themeManager.selectedTheme.bodyTextColor.opacity(0.6))
@@ -69,40 +80,31 @@ struct AddBoxPage: View {
                     }
                 }
                 .buttonStyle(.plain)
-                .onChange(of: selectedPhoto) { oldValue, newValue in
+                .onChange(of: selectedPhoto) { _, newValue in
                     Task {
                         await loadPhoto(from: newValue)
                     }
                 }
             }
-            
+
             Section {
                 TextField("Box Name", text: $boxName)
                     .font(themeManager.selectedTheme.bodyTextFont)
-                    .autocorrectionDisabled()
-                
-                TextField("Location (optional)", text: $locationHint)
+                TextField("Location (optional)", text: $location)
                     .font(themeManager.selectedTheme.bodyTextFont)
-                    .autocorrectionDisabled()
             } header: {
                 Text("Details")
-                    .font(themeManager.selectedTheme.captionTxtFont)
-            } footer: {
-                Text("Give your box a unique name and optionally specify where it's located")
-                    .font(themeManager.selectedTheme.bodyTextFont)
             }
-            
+
             Section {
-                Button {
-                    saveBox()
-                } label: {
+                Button(action: save) {
                     HStack {
                         Spacer()
                         if isSaving {
                             ProgressView()
                                 .tint(.white)
                         } else {
-                            Text("Save Box")
+                            Text(saveButtonTitle)
                                 .font(themeManager.selectedTheme.normalBtnTitleFont)
                                 .foregroundColor(.white)
                         }
@@ -115,7 +117,7 @@ struct AddBoxPage: View {
                 .opacity(boxName.isEmpty || isSaving ? 0.5 : 1.0)
             }
         }
-        .navigationTitle("New Box")
+        .navigationTitle(navigationTitle)
         #if os(iOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
@@ -128,21 +130,48 @@ struct AddBoxPage: View {
                 .disabled(isSaving)
             }
         }
+        .onAppear(perform: setup)
         .alert("Error", isPresented: $showError) {
-            Button("OK", role: .cancel) { }
+            Button("OK") { }
         } message: {
             Text(errorMessage)
         }
     }
-    
-    // MARK: - Load Photo
+
+    private func setup() {
+        if let box = box {
+            boxName = box.name
+            location = box.locationHint
+            photoURL = box.photoURL
+        }
+    }
+
+    private func save() {
+        isSaving = true
+        do {
+            if let box = box {
+                try box.update(context: context, name: boxName, locationHint: location, photoURL: photoURL)
+            } else {
+                let newBox = StorageBox(name: boxName, photoURL: photoURL, locationHint: location)
+                try newBox.save(context: context)
+            }
+            router.navigateBack()
+        } catch let error as LocalizedError {
+            errorMessage = error.localizedDescription
+            showError = true
+            isSaving = false
+        } catch {
+            errorMessage = "An unexpected error occurred."
+            showError = true
+            isSaving = false
+        }
+    }
+
     private func loadPhoto(from item: PhotosPickerItem?) async {
         guard let item = item else { return }
-        
         do {
             if let data = try await item.loadTransferable(type: Data.self),
                let image = PlatformImage(data: data) {
-                // Save image to documents directory
                 let filename = UUID().uuidString + ".jpg"
                 if let savedURL = saveImageToDocuments(image, filename: filename) {
                     await MainActor.run {
@@ -151,24 +180,15 @@ struct AddBoxPage: View {
                 }
             }
         } catch {
-            await MainActor.run {
-                errorMessage = "Failed to load photo"
-                showError = true
-            }
+            errorMessage = "Failed to load photo"
+            showError = true
         }
     }
-    
-    // MARK: - Save Image to Documents
+
     private func saveImageToDocuments(_ image: PlatformImage, filename: String) -> URL? {
         guard let data = image.jpegData(compressionQuality: 0.8) else { return nil }
-        
-        let documentsPath = FileManager.default.urls(
-            for: .documentDirectory,
-            in: .userDomainMask
-        )[0]
-        
+        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let fileURL = documentsPath.appendingPathComponent(filename)
-        
         do {
             try data.write(to: fileURL)
             return fileURL
@@ -177,58 +197,4 @@ struct AddBoxPage: View {
             return nil
         }
     }
-    
-    // MARK: - Load Image from Path
-    private func loadImageFromPath(_ path: String) -> PlatformImage? {
-        // Handle both file:// URLs and plain paths
-        let fileURL: URL
-        if path.hasPrefix("file://") {
-            fileURL = URL(fileURLWithPath: path.replacingOccurrences(of: "file://", with: ""))
-        } else {
-            fileURL = URL(fileURLWithPath: path)
-        }
-        
-        guard let data = try? Data(contentsOf: fileURL),
-              let image = PlatformImage(data: data) else {
-            return nil
-        }
-        
-        return image
-    }
-    
-    // MARK: - Save Box
-    private func saveBox() {
-        isSaving = true
-        
-        // Create new StorageBox
-        let box = StorageBox(
-            name: boxName.trimmingCharacters(in: .whitespaces),
-            photoURL: photoURL,
-            locationHint: locationHint.trimmingCharacters(in: .whitespaces)
-        )
-        
-        do {
-            // Save with validation
-            try box.save(context: context)
-            
-            // Success - navigate back
-            router.navigateBack()
-            
-        } catch StorageBoxError.duplicateName {
-            errorMessage = "A box with this name already exists. Please choose a different name."
-            showError = true
-            isSaving = false
-            
-        } catch StorageBoxError.invalidName {
-            errorMessage = "Box name cannot be empty."
-            showError = true
-            isSaving = false
-            
-        } catch {
-            errorMessage = "Failed to save box: \(error.localizedDescription)"
-            showError = true
-            isSaving = false
-        }
-    }
 }
-

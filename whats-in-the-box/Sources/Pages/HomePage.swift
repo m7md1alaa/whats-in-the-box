@@ -121,15 +121,26 @@ struct BoxCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            // Box Icon
-            RoundedRectangle(cornerRadius: 12)
-                .fill(themeManager.selectedTheme.primaryThemeColor.opacity(0.1))
-                .frame(height: 120)
-                .overlay {
-                    Image(systemName: "shippingbox.fill")
-                        .font(.system(size: 40))
-                        .foregroundColor(themeManager.selectedTheme.primaryThemeColor)
+            // Box Image
+            Group {
+                if let photoURL = box.photoURL, let image = loadImageFromPath(photoURL) {
+                    Image(platformImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(height: 120)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                } else {
+                    // Fallback icon
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(themeManager.selectedTheme.primaryThemeColor.opacity(0.1))
+                        .frame(height: 120)
+                        .overlay {
+                            Image(systemName: "shippingbox.fill")
+                                .font(.system(size: 40))
+                                .foregroundColor(themeManager.selectedTheme.primaryThemeColor)
+                        }
                 }
+            }
             
             // Box Info
             VStack(alignment: .leading, spacing: 4) {

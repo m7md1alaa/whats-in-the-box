@@ -177,21 +177,7 @@ struct BoxDetailPage: View {
         }
     }
     
-    private func loadImageFromPath(_ path: String) -> PlatformImage? {
-        let fileURL: URL
-        if path.hasPrefix("file://") {
-            fileURL = URL(fileURLWithPath: path.replacingOccurrences(of: "file://", with: ""))
-        } else {
-            fileURL = URL(fileURLWithPath: path)
-        }
-        
-        guard let data = try? Data(contentsOf: fileURL),
-              let image = PlatformImage(data: data) else {
-            return nil
-        }
-        
-        return image
-    }
+
 }
 
 // MARK: - Info Row Component
