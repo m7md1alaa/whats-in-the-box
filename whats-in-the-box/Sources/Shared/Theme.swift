@@ -1,5 +1,6 @@
 import SwiftUI
-internal import Combine
+import Combine
+
 /**
  Protocol for themes
  */
@@ -31,12 +32,12 @@ class ThemeManager: ObservableObject {
  Main Theme
  */
 struct Main: ThemeProtocol {
-    var largeTitleFont: Font = .custom("MartelSans-ExtraBold", size: 30.0)
-    var textTitleFont: Font = .custom("MartelSans-ExtraBold", size: 24.0)
-    var normalBtnTitleFont: Font = .custom("MartelSans-SemiBold", size: 20.0)
-    var boldBtnTitleFont: Font = .custom("MartelSans-Bold", size: 20.0)
-    var bodyTextFont: Font = .custom("MartelSans-Light", size: 18.0)
-    var captionTxtFont: Font = .custom("MartelSans-SemiBold", size: 20.0)
+    var largeTitleFont: Font = .system(size: 30, weight: .bold, design: .rounded)
+    var textTitleFont: Font = .system(size: 24, weight: .bold, design: .rounded)
+    var normalBtnTitleFont: Font = .system(size: 20, weight: .semibold, design: .rounded)
+    var boldBtnTitleFont: Font = .system(size: 20, weight: .bold, design: .rounded)
+    var bodyTextFont: Font = .system(size: 18, weight: .regular, design: .rounded)
+    var captionTxtFont: Font = .system(size: 20, weight: .semibold, design: .rounded)
     
     var primaryThemeColor: Color { return Color("mnPrimaryThemeColor") }
     var secondoryThemeColor: Color { return Color("mnSecondoryThemeColor") }
