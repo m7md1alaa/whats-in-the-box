@@ -10,6 +10,20 @@ struct HomePage: View {
     
     @State private var boxToDelete: StorageBox?
     @State private var isShowingDeleteAlert = false
+    @State private var searchQuery = ""
+    
+    private var filteredBoxes: [StorageBox] {
+        if searchQuery.isEmpty {
+            return boxes
+        } else {
+            return boxes.filter { box in
+                box.name.localizedCaseInsensitiveContains(searchQuery) ||
+                (box.items?.contains { item in
+                    item.name.localizedCaseInsensitiveContains(searchQuery)
+                } ?? false)
+            }
+        }
+    }
     
     var body: some View {
         ScrollView {
@@ -83,18 +97,15 @@ struct HomePage: View {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(themeManager.selectedTheme.bodyTextColor.opacity(0.5))
             
-            Text("Search items...")
+            TextField("Search items...", text: $searchQuery)
                 .font(themeManager.selectedTheme.bodyTextFont)
-                .foregroundColor(themeManager.selectedTheme.bodyTextColor.opacity(0.5))
+                .foregroundColor(themeManager.selectedTheme.bodyTextColor)
             
             Spacer()
         }
         .padding()
         .background(themeManager.selectedTheme.textBoxColor)
         .cornerRadius(12)
-        .onTapGesture {
-            // Navigate to search page (coming soon)
-        }
     }
     
     // MARK: - Boxes Grid
@@ -103,7 +114,7 @@ struct HomePage: View {
             GridItem(.flexible()),
             GridItem(.flexible())
         ], spacing: 16) {
-            ForEach(boxes) { box in
+            ForEach(filteredBoxes) { box in
                 BoxCard(box: box) {
                     router.navigate(to: .editBox(boxId: box.id.uuidString))
                 } onDelete: {

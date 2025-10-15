@@ -103,53 +103,6 @@ This app uses a centralized theme system that automatically adapts to light/dark
 
 ---
 
-## 🎨 Color Palette
-
-### Primary & Secondary Colors
-
-- **Primary** (`primaryThemeColor`): Main brand color - vibrant indigo/periwinkle
-- **Secondary** (`secondoryThemeColor`): Accent color - electric cyan/sky blue
-
-### Button Colors
-
-- **Affirm Button** (`affirmBtnTitleColor`): Success/confirm actions - emerald green
-- **Negative Button** (`negativeBtnTitleColor`): Cancel/destructive actions - coral red
-
-### Text & Background Colors
-
-- **Body Text** (`bodyTextColor`): Main readable text - dark charcoal (light) / soft white (dark)
-- **Text Box** (`textBoxColor`): Input fields and containers - clean white (light) / rich dark (dark)
-
-### Light/Dark Mode
-
-All colors automatically adapt when the system switches between light and dark mode. Colors are defined in `Assets.xcassets` with the prefix `mn`:
-
-- `mnPrimaryThemeColor`
-- `mnSecondoryThemeColor`
-- `mnAffirmBtnTitleColor`
-- `mnNegativeBtnTitleColor`
-- `mnBodyTextColor`
-- `mnTextBoxColor`
-
----
-
-## 📝 Typography
-
-### Font Family
-
-All fonts use **MartelSans** family. Ensure these fonts are installed in the project.
-
-### Font Styles
-
-- **Large Title** (`largeTitleFont`): ExtraBold 30pt - Main headings
-- **Text Title** (`textTitleFont`): ExtraBold 24pt - Section headers
-- **Normal Button** (`normalBtnTitleFont`): SemiBold 20pt - Standard buttons
-- **Bold Button** (`boldBtnTitleFont`): Bold 20pt - Emphasized buttons
-- **Body Text** (`bodyTextFont`): Light 18pt - Paragraphs and body content
-- **Caption** (`captionTxtFont`): SemiBold 20pt - Labels and captions
-
----
-
 ## 🔧 Usage Guide
 
 ### 1. Setup (Already Done)
