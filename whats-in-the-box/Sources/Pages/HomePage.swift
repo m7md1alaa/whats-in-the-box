@@ -12,17 +12,27 @@ struct HomePage: View {
     @State private var isShowingDeleteAlert = false
     @State private var searchQuery = ""
     
-    private var filteredBoxes: [StorageBox] {
+    private var searchResults: [SearchResult] {
         if searchQuery.isEmpty {
-            return boxes
-        } else {
-            return boxes.filter { box in
-                box.name.localizedCaseInsensitiveContains(searchQuery) ||
-                (box.items?.contains { item in
-                    item.name.localizedCaseInsensitiveContains(searchQuery)
-                } ?? false)
+            return boxes.map { .box($0) }
+        }
+
+        var results: [SearchResult] = []
+        let lowercasedQuery = searchQuery.lowercased()
+
+        for box in boxes {
+            let boxNameMatches = box.name.lowercased().contains(lowercasedQuery)
+            
+            if boxNameMatches {
+                results.append(.box(box))
+            } else {
+                let matchingItems = box.items?.filter { $0.name.lowercased().contains(lowercasedQuery) } ?? []
+                for item in matchingItems {
+                    results.append(.item(item, in: box))
+                }
             }
         }
+        return results
     }
     
     var body: some View {
@@ -34,8 +44,8 @@ struct HomePage: View {
                 // Search Bar
                 searchBar
                 
-                // Boxes Grid
-                boxesGrid
+                // Search Results
+                searchResultsList
             }
             .padding()
         }
@@ -108,21 +118,26 @@ struct HomePage: View {
         .cornerRadius(12)
     }
     
-    // MARK: - Boxes Grid
-    private var boxesGrid: some View {
-        LazyVGrid(columns: [
-            GridItem(.flexible()),
-            GridItem(.flexible())
-        ], spacing: 16) {
-            ForEach(filteredBoxes) { box in
-                BoxCard(box: box) {
-                    router.navigate(to: .editBox(boxId: box.id.uuidString))
-                } onDelete: {
-                    boxToDelete = box
-                    isShowingDeleteAlert = true
-                }
-                .onTapGesture {
-                    router.navigate(to: .boxDetail(boxId: box.id.uuidString))
+    // MARK: - Search Results List
+    private var searchResultsList: some View {
+        VStack(spacing: 16) {
+            ForEach(searchResults) { result in
+                switch result {
+                case .box(let box):
+                    BoxCard(box: box) {
+                        router.navigate(to: .editBox(boxId: box.id.uuidString))
+                    } onDelete: {
+                        boxToDelete = box
+                        isShowingDeleteAlert = true
+                    }
+                    .onTapGesture {
+                        router.navigate(to: .boxDetail(boxId: box.id.uuidString))
+                    }
+                case .item(let item, let box):
+                    ItemSearchResultRow(item: item, box: box)
+                        .onTapGesture {
+                            router.navigate(to: .boxDetail(boxId: box.id.uuidString))
+                        }
                 }
             }
         }
@@ -140,8 +155,53 @@ struct HomePage: View {
     }
 }
 
+// MARK: - Search Result Types
+private enum SearchResult: Hashable, Identifiable {
+    case box(StorageBox)
+    case item(BoxItem, in: StorageBox)
 
+    var id: AnyHashable {
+        switch self {
+        case .box(let box):
+            return "box-\(box.id.hashValue)"
+        case .item(let item, _):
+            return "item-\(item.id.hashValue)"
+        }
+    }
+}
 
+// MARK: - Item Search Result Row
+private struct ItemSearchResultRow: View {
+    let item: BoxItem
+    let box: StorageBox
+    @EnvironmentObject private var themeManager: ThemeManager
+
+    var body: some View {
+        HStack {
+            Image(systemName: "tag")
+                .font(.title)
+                .foregroundColor(themeManager.selectedTheme.primaryThemeColor)
+                .frame(width: 40, height: 40)
+
+            VStack(alignment: .leading) {
+                Text(item.name)
+                    .font(themeManager.selectedTheme.bodyTextFont)
+                    .foregroundColor(themeManager.selectedTheme.bodyTextColor)
+                Text("In: \(box.name)")
+                    .font(themeManager.selectedTheme.captionTxtFont)
+                    .foregroundColor(themeManager.selectedTheme.bodyTextColor.opacity(0.7))
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .foregroundColor(.gray)
+        }
+        .padding()
+        .background(themeManager.selectedTheme.textBoxColor)
+        .cornerRadius(12)
+    }
+}
 
 #Preview {
     NavigationStack {
