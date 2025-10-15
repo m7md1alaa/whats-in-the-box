@@ -6,6 +6,7 @@ struct BoxCard: View {
     let onEdit: () -> Void
     let onDelete: () -> Void
     @EnvironmentObject private var themeManager: ThemeManager
+    @Environment(Router.self) private var router
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -45,7 +46,21 @@ struct BoxCard: View {
         .padding()
         .background(themeManager.selectedTheme.textBoxColor)
         .cornerRadius(16)
-        #if os(macOS)
+        #if os(iOS)
+        .contextMenu {
+            Button(action: onEdit) {
+                Label("Edit Box", systemImage: "pencil")
+            }
+            
+            Button(role: .destructive, action: onDelete) {
+                Label("Delete Box", systemImage: "trash")
+            }
+        } preview: {
+            BoxDetailPage(boxId: box.id.uuidString)
+                .environmentObject(themeManager)
+                .environment(router)
+        }
+        #elseif os(macOS)
         .contextMenu {
             Button(action: onEdit) {
                 Label("Edit Box", systemImage: "pencil")

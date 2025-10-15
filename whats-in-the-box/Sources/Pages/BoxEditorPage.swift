@@ -29,9 +29,10 @@ struct BoxEditorPage: View {
     @State private var showFileImporter = false
 
     private var isEditing: Bool { box != nil }
-    private var navigationTitle: String { isEditing ? "Edit Box" : "Add New Box" }
-    private var saveButtonTitle: String { isEditing ? "Save Changes" : "Save Box" }
-
+    private var navigationTitle: LocalizedStringResource { isEditing ? "Edit Box" : "Add New Box" }
+    private var saveButtonTitle: LocalizedStringResource {
+        isEditing ? "Save Changes" : "Save Box"
+    }
     // MARK: - Init with Query Filter
     init(boxId: String?) {
         self.boxId = boxId

@@ -41,10 +41,20 @@ struct whats_in_the_boxApp: App {
             .environment(router)
             .environmentObject(themeManager)
             #else
-            NavigationStack(path: $router.path) {
-                HomePage()
-                    .navigationDestination(for: Route.self) { route in
-                        routeView(for: route)
+            TabView {
+                NavigationStack(path: $router.path) {
+                    HomePage()
+                        .navigationDestination(for: Route.self) { route in
+                            routeView(for: route)
+                        }
+                }
+                .tabItem {
+                    Label("Home", systemImage: "house.fill")
+                }
+                
+                SettingsPage()
+                    .tabItem {
+                        Label("Settings", systemImage: "gearshape.fill")
                     }
             }
             .environment(router)
@@ -63,18 +73,16 @@ struct whats_in_the_boxApp: App {
                 Divider()
             }
             // Remove View menu
-              CommandGroup(replacing: .sidebar) { }
+            CommandGroup(replacing: .sidebar) { }
             CommandGroup(after: .appSettings) {
-                Button("Settings"){
+                Button("Settings") {
                     router.navigate(to: .settings)
                 }
-                // i awnt to remove the new windown cuz it is also n .keyboardShortcut(",", modifiers: .command)
                 .keyboardShortcut(",", modifiers: .command)
-                
             }
               
-              // Remove Window menu
-              CommandGroup(replacing: .windowList) { }
+            // Remove Window menu
+            CommandGroup(replacing: .windowList) { }
             #endif
         }
     }

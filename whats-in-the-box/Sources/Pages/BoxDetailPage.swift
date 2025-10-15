@@ -192,7 +192,7 @@ struct BoxDetailPage: View {
 // MARK: - Info Row Component
 struct InfoRow: View {
     let icon: String
-    let title: String
+    let title: LocalizedStringResource
     let value: String
     
     @EnvironmentObject private var themeManager: ThemeManager

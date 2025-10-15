@@ -45,15 +45,6 @@ struct HomePage: View {
             #else
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    router.navigate(to: .settings)
-                } label: {
-                    Image(systemName: "gear")
-                        .foregroundColor(themeManager.selectedTheme.primaryThemeColor)
-                }
-            }
-            
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
                     router.navigate(to: .addBox)
                 } label: {
                     Image(systemName: "plus.circle.fill")
@@ -137,7 +128,6 @@ struct HomePage: View {
         }
     }
 }
-
 
 
 
