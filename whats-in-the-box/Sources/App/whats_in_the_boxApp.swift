@@ -49,14 +49,14 @@ struct whats_in_the_boxApp: App {
                         }
                 }
                 .tabItem {
-                    Label("Home", systemImage: "house.fill")
+                    Label("Home", systemImage: "house.fill",)
                 }
                 
                 SettingsPage()
                     .tabItem {
                         Label("Settings", systemImage: "gearshape.fill")
                     }
-            }
+            }.tint(themeManager.selectedTheme.primaryThemeColor)
             .environment(router)
             .environmentObject(themeManager)
             #endif

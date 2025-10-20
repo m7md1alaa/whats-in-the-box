@@ -23,6 +23,8 @@ struct BoxEditorPage: View {
     @State private var selectedPhoto: PhotosPickerItem?
     #endif
     @State private var photoURL: String?
+    @State private var items: [BoxItem] = []
+    @State private var newItemName: String = ""
     @State private var showError = false
     @State private var errorMessage = ""
     @State private var isSaving = false
@@ -105,6 +107,24 @@ struct BoxEditorPage: View {
                     .font(themeManager.selectedTheme.bodyTextFont)
             }
 
+            Section(header: Text("Items")) {
+                List {
+                    ForEach(items) { item in
+                        Text(item.name)
+                    }
+                    .onDelete(perform: removeItem)
+                }
+
+                HStack {
+                    TextField("New Item", text: $newItemName)
+                        .onSubmit(addItem)
+                    Button(action: addItem) {
+                        Image(systemName: "plus.circle.fill")
+                    }
+                    .disabled(newItemName.isEmpty)
+                }
+            }
+
             Section {
                 Button(action: save) {
                     HStack {
@@ -176,6 +196,57 @@ struct BoxEditorPage: View {
                                 .foregroundColor(.secondary)
                             TextField("Enter location (optional)", text: $location)
                                 .textFieldStyle(.roundedBorder)
+                        }
+                    }
+                    .padding()
+                    .background(Color(nsColor: .controlBackgroundColor))
+                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .strokeBorder(Color.gray.opacity(0.2), lineWidth: 1)
+                    )
+                }
+
+                // Items Section
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Items")
+                        .font(.headline)
+                        .foregroundColor(.secondary)
+
+                    VStack(spacing: 16) {
+                        if items.isEmpty {
+                            Text("No items added yet.")
+                                .foregroundColor(.secondary)
+                                .padding(.vertical, 20)
+                        } else {
+                            List {
+                                ForEach(items) { item in
+                                    HStack {
+                                        Text(item.name)
+                                        Spacer()
+                                        Button(action: {
+                                            if let index = items.firstIndex(where: { $0.id == item.id }) {
+                                                removeItem(at: IndexSet(integer: index))
+                                            }
+                                        }) {
+                                            Image(systemName: "trash")
+                                                .foregroundColor(.red)
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                    .padding(.vertical, 4)
+                                }
+                            }
+                            .listStyle(.plain)
+                            .frame(maxHeight: 200)
+                        }
+
+                        HStack {
+                            TextField("Add new item", text: $newItemName)
+                                .textFieldStyle(.roundedBorder)
+                                .onSubmit(addItem)
+                            Button("Add", action: addItem)
+                                .disabled(newItemName.isEmpty)
                         }
                     }
                     .padding()
@@ -278,12 +349,36 @@ struct BoxEditorPage: View {
         }
     }
 
+    // MARK: - Item Management
+    private func addItem() {
+        let trimmedName = newItemName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty else { return }
+
+        // Prevent duplicates
+        guard !items.contains(where: { $0.name.caseInsensitiveCompare(trimmedName) == .orderedSame }) else {
+            errorMessage = "This item has already been added."
+            showError = true
+            return
+        }
+
+        let newItem = BoxItem(name: trimmedName, recognizedBy: .manual)
+        items.append(newItem)
+        newItemName = ""
+    }
+
+    private func removeItem(at offsets: IndexSet) {
+        items.remove(atOffsets: offsets)
+    }
+
     // MARK: - Setup
     private func setup() {
         if let box = box {
             boxName = box.name
             location = box.locationHint
             photoURL = box.photoURL
+            if let boxItems = box.items {
+                items = boxItems
+            }
         }
     }
 
@@ -291,19 +386,53 @@ struct BoxEditorPage: View {
     private func save() {
         isSaving = true
         do {
+            let trimmedName = boxName.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmedName.isEmpty else {
+                errorMessage = "Box name cannot be empty."
+                showError = true
+                isSaving = false
+                return
+            }
+
             if let box = box {
-                try box.update(context: context, name: boxName, locationHint: location, photoURL: photoURL)
+                // Update existing box
+                try box.update(context: context, name: trimmedName, locationHint: location, photoURL: photoURL)
+                
+                // Sync items
+                let originalItems = box.items ?? []
+                let itemsToRemove = originalItems.filter { originalItem in
+                    !items.contains(where: { $0.id == originalItem.id })
+                }
+                
+                for item in itemsToRemove {
+                    context.delete(item)
+                }
+                
+                let itemsToAdd = items.filter { item in
+                    !originalItems.contains(where: { $0.id == item.id })
+                }
+                
+                for item in itemsToAdd {
+                    box.addItem(item)
+                }
+                
             } else {
-                let newBox = StorageBox(name: boxName, photoURL: photoURL, locationHint: location)
+                // Create new box
+                let newBox = StorageBox(name: trimmedName, photoURL: photoURL, locationHint: location)
+                for item in items {
+                    newBox.addItem(item)
+                }
                 try newBox.save(context: context)
             }
+            
             router.navigateBack()
+            
         } catch let error as LocalizedError {
             errorMessage = error.localizedDescription
             showError = true
             isSaving = false
         } catch {
-            errorMessage = "An unexpected error occurred."
+            errorMessage = "An unexpected error occurred: \(error.localizedDescription)"
             showError = true
             isSaving = false
         }
