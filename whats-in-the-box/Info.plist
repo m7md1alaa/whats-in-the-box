@@ -2,9 +2,36 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>UIBackgroundModes</key>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>whatsinthebox</string>
+            </array>
+            <key>CFBundleURLName</key>
+            <string>com.mohdalaa.whats-in-the-box</string>
+        </dict>
+    </array>
+    <!-- Speech Recognition -->
+      <key>NSSpeechRecognitionUsageDescription</key>
+      <string>${NSSpeechRecognitionUsageDescription}</string>
+
+      <!-- Microphone -->
+      <key>NSMicrophoneUsageDescription</key>
+      <string>${NSMicrophoneUsageDescription}</string>
+
+      <!-- Photo Library Read -->
+      <key>NSPhotoLibraryUsageDescription</key>
+      <string>${NSPhotoLibraryUsageDescription}</string>
+
+      <!-- Photo Library Write -->
+      <key>NSPhotoLibraryAddUsageDescription</key>
+      <string>${NSPhotoLibraryAddUsageDescription}</string>
+      
+    <key>UIBackgroundModes</key>
 	<array>
-		<string>remote-notification</string>
+		<string></string>
 	</array>
 </dict>
 </plist>

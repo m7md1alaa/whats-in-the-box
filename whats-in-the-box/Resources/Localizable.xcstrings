@@ -47,6 +47,9 @@
         }
       }
     },
+    "Add" : {
+
+    },
     "Add New Box" : {
       "localizations" : {
         "ar" : {
@@ -56,6 +59,9 @@
           }
         }
       }
+    },
+    "Add new item" : {
+
     },
     "Add Photo" : {
       "localizations" : {
@@ -147,6 +153,16 @@
         }
       }
     },
+    "Box QR Code" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "رمز QR للصندوق"
+          }
+        }
+      }
+    },
     "Cancel" : {
       "localizations" : {
         "ar" : {
@@ -197,12 +213,32 @@
         }
       }
     },
+    "Content" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "المحتوى"
+          }
+        }
+      }
+    },
     "Contents" : {
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "المحتويات"
+          }
+        }
+      }
+    },
+    "Create Your QR Code" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "سوّي رمز QR خاص بك"
           }
         }
       }
@@ -237,12 +273,32 @@
         }
       }
     },
+    "Done" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تم"
+          }
+        }
+      }
+    },
     "Edit Box" : {
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "تعديل الصندوق"
+          }
+        }
+      }
+    },
+    "Enter any text, URL, or select a template" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أدخل نص، رابط، أو اختَر قالب"
           }
         }
       }
@@ -267,12 +323,43 @@
         }
       }
     },
+    "Enter text, URL, or contact info..." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أدخل نص، رابط، أو معلومات تواصل..."
+          }
+        }
+      }
+    },
     "Error" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "خطأ"
+          }
+        }
+      }
+    },
+    "Generate QR Code" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إنشاء رمز QR"
+          }
+        }
+      }
+    },
+    "Generating QR Code..." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "جاري إنشاء رمز QR..."
           }
         }
       }
@@ -361,7 +448,14 @@
       }
     },
     "New Item" : {
-
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "عنصر جديد"
+          }
+        }
+      }
     },
     "No items in this box yet." : {
       "localizations" : {
@@ -384,6 +478,7 @@
       }
     },
     "OK" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -409,6 +504,39 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "سياسة الخصوصية"
+          }
+        }
+      }
+    },
+    "QR Code" : {
+
+    },
+    "QR Code for %@" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "رمز QR لـ %@"
+          }
+        }
+      }
+    },
+    "QR Color" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لون الرمز"
+          }
+        }
+      }
+    },
+    "QR Generator" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مولد رمز QR"
           }
         }
       }
@@ -453,6 +581,26 @@
         }
       }
     },
+    "Scan me!" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "امسحني!"
+          }
+        }
+      }
+    },
+    "Scan this QR code to open the box details." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "امسح رمز QR هذا عشان تشوف تفاصيل الصندوق."
+          }
+        }
+      }
+    },
     "Search items..." : {
       "localizations" : {
         "ar" : {
@@ -473,12 +621,52 @@
         }
       }
     },
+    "Share" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مشاركة"
+          }
+        }
+      }
+    },
+    "Speak now..." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اتكلم الحين.."
+          }
+        }
+      }
+    },
+    "Starting..." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يبدآ"
+          }
+        }
+      }
+    },
     "Storage" : {
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "التخزين"
+          }
+        }
+      }
+    },
+    "Style" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الستايل"
           }
         }
       }
@@ -509,6 +697,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "ماذا يوجد في الصندوق؟"
+          }
+        }
+      }
+    },
+    "Your QR code will appear here" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "سيظهر رمز QR هنا"
           }
         }
       }

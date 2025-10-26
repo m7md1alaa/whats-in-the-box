@@ -177,7 +177,6 @@ struct SettingRow: View {
 #Preview {
     NavigationStack {
         SettingsPage()
-            .modelContainer(DataController.previewContainer)
             .environment(Router())
             .environmentObject(ThemeManager())
     }

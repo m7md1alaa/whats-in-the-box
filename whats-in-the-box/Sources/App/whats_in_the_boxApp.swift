@@ -40,6 +40,9 @@ struct whats_in_the_boxApp: App {
             }
             .environment(router)
             .environmentObject(themeManager)
+            .onOpenURL { url in
+                router.handleURL(url)
+            }
             #else
             TabView {
                 NavigationStack(path: $router.path) {
@@ -57,8 +60,12 @@ struct whats_in_the_boxApp: App {
                         Label("Settings", systemImage: "gearshape.fill")
                     }
             }.tint(themeManager.selectedTheme.primaryThemeColor)
+            .tabBarMinimizeBehavior(.onScrollDown)
             .environment(router)
             .environmentObject(themeManager)
+            .onOpenURL { url in
+                router.handleURL(url)
+            }
             #endif
         }
         .modelContainer(sharedModelContainer)

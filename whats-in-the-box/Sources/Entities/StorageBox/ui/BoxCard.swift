@@ -57,7 +57,6 @@ struct BoxCard: View {
             }
         } preview: {
             BoxDetailPage(boxId: box.id.uuidString)
-                .modelContainer(DataController.previewContainer)
                 .environmentObject(themeManager)
                 .environment(router)
         }

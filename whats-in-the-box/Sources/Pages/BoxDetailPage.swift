@@ -10,6 +10,7 @@ struct BoxDetailPage: View {
     
     @Query private var boxes: [StorageBox]
     @State private var isShowingDeleteAlert = false
+    @State private var selectedBoxForQR: StorageBox?
     
     init(boxId: String) {
         self.boxId = boxId
@@ -53,6 +54,12 @@ struct BoxDetailPage: View {
                         Label("Edit Box", systemImage: "pencil")
                     }
                     
+                    Button {
+                        selectedBoxForQR = box
+                    } label: {
+                        Label("Generate QR Code", systemImage: "qrcode")
+                    }
+                    
                     Button(role: .destructive) {
                         isShowingDeleteAlert = true
                     } label: {
@@ -68,6 +75,12 @@ struct BoxDetailPage: View {
                             router.navigate(to: .editBox(boxId: boxId))
                         } label: {
                             Label("Edit Box", systemImage: "pencil")
+                        }
+                        
+                        Button {
+                            selectedBoxForQR = box
+                        } label: {
+                            Label("Generate QR Code", systemImage: "qrcode")
                         }
                         
                         Button(role: .destructive) {
@@ -89,6 +102,10 @@ struct BoxDetailPage: View {
                 Button("Cancel", role: .cancel) { }
             } message: {
                 Text("This action cannot be undone.")
+            }
+            .sheet(item: $selectedBoxForQR) { box in
+                GenerateQRSheet(box: box)
+                    .environmentObject(themeManager)
             }
         } else {
             ContentUnavailableView("Box Not Found", systemImage: "shippingbox.fill")

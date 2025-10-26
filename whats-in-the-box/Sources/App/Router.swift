@@ -32,6 +32,25 @@ class Router {
         path.removeLast()
         path.append(route)
     }
+    
+    func handleURL(_ url: URL) {
+        guard let scheme = url.scheme, scheme == "whatsinthebox" else {
+            return
+        }
+
+        guard let host = url.host, host == "box" else {
+            return
+        }
+
+        let boxId = url.lastPathComponent
+        guard !boxId.isEmpty else {
+            return
+        }
+
+        // Assuming the app starts with the HomePage already in the stack.
+        // We navigate to the box detail page.
+        navigate(to: .boxDetail(boxId: boxId))
+    }
 }
 
 // MARK: - Route View Builder
